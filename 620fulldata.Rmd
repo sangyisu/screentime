@@ -1,0 +1,73 @@
+---
+title: "620pj"
+author: "Sangyi Su"
+date: "2023-04-08"
+output: html_document
+---
+# data setting
+```{r setup, include=FALSE}
+library(readxl)
+data = read_excel("Fulldata_620W23_Project2.xlsx",sheet = 2)
+baseline = read_excel("Fulldata_620W23_Project2.xlsx",sheet = 1)
+```
+
+
+# missing data in baseline
+```{r}
+set.seed(1234)
+library(mice)
+baseline = data.frame(baseline)
+baseline[, 3:15] <- lapply(baseline[, 3:15], as.numeric)
+colnames(baseline)[9]<-"coursehours"
+baseline.dat = mice(baseline,method = "sample")
+complete(baseline.dat)
+complete(baseline.dat,"all")
+baseline.full = complete(baseline.dat,c(1,15))
+```
+```{r}
+which(baseline.dat == "NA")
+```
+
+# missing data in data
+```{r}
+data=data.frame(data)
+data = data.frame(data[,-c(2,4)])
+```
+
+```{r}
+data[,2:6] <- lapply(data[,2:6],as.numeric)
+```
+
+```{r}
+set.seed(123456)
+library(mice)
+data.dat = mice(data,method = "sample")
+complete(data.dat)
+complete(data.dat,"all")
+data.full = complete(data.dat,c(1,15))
+```
+
+```{r}
+which(data.dat == "NA")
+```
+
+# merge
+```{r}
+fulldata = merge(data.full,baseline.full,by = "ID")
+fulldata$Date = as.character(fulldata$Date)
+typeof(fulldata$Date[1])
+fulldata$Treatment = ifelse(fulldata$Date == "2023-03-20"|fulldata$Date =="2023-03-21"|fulldata$Date =="2023-03-22"|fulldata$Date =="2023-03-23"|fulldata$Date =="2023-03-24"|fulldata$Date =="2023-03-25"|fulldata$Date =="2023-03-26",fulldata$Treatment,"P")
+library("writexl")
+write_xlsx(fulldata,"fulldata.xlsx")
+```
+
+# (opitional) IPW method---
+```{r}
+# B and P
+BP = baseline.full
+BP$intervention = ifelse(BP$Treatment == "A",1,0)
+BP=BP[,-2]
+myfit = glm(intervention~., data = BP,family = binomial
+(link="logit"))
+summary(myfit)
+```
