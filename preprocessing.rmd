@@ -1,0 +1,21 @@
+```{r}
+library(readxl)
+mydata = read_excel("fulldata.xlsx")
+```
+
+```{r}
+Total.ST.min = mydata$Total.ST.min
+Pickups = mydata$Pickups
+png("histgram of Total.ST.min.png")
+hist(Total.ST.min)
+dev.off()
+png("histgram of Pickups.png")
+hist(Pickups)
+dev.off()
+png("boxplot of Total.ST.min.png")
+boxplot(Total.ST.min,range =3,xlab = c("Total.ST.min"))
+dev.off()
+png("boxplot of Pickups.png")
+boxplot(Pickups,range =3,xlab = c("Pickups"))
+dev.off()
+```
